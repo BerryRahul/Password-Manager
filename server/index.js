@@ -4,6 +4,8 @@ const mysql = require("mysql2");
 const cors = require("cors");
 const PORT = 3001;
 
+const {encrypt, decrypt} = require("./encryptionHandler");
+
 app.use(cors());
 app.use(express.json());
 
@@ -14,6 +16,7 @@ const db = mysql.createConnection({
   database: "PasswordManager",
 });
 
+// route
 app.post("/addpassword", (req, res) => {
   const { password, title } = req.body;
 
