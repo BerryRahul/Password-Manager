@@ -1,28 +1,27 @@
+
 const express = require("express");
 const app = express();
-const mysql = require("mysql2");
+const mysql = require("mysql");
 const cors = require("cors");
-const PORT = 3001;
+const PORT = process.env.PORT;
 
-const {encrypt, decrypt} = require("./encryptionHandler");
+const { encrypt, decrypt } = require("./encryptionHandler");
 
 app.use(cors());
 app.use(express.json());
 
 const db = mysql.createConnection({
-  user: "root",
-  host: "localhost",
-  password: "password",
-  database: "PasswordManager",
+  user:  `${process.env.USER}`,
+  host: `${process.env.HOST}`,
+  password: `${process.env.PASSWORD}`,
+  database: `${process.env.DATABASE}`,
 });
 
-// route
 app.post("/addpassword", (req, res) => {
   const { password, title } = req.body;
   const hashedPassword = encrypt(password);
-
   db.query(
-    "INSERT INTO passwords (password, title, iv) VALUES (?, ?, ?)",
+    "INSERT INTO passwords (password, title, iv) VALUES (?,?,?)",
     [hashedPassword.password, title, hashedPassword.iv],
     (err, result) => {
       if (err) {
@@ -32,6 +31,20 @@ app.post("/addpassword", (req, res) => {
       }
     }
   );
+});
+
+app.get("/showpasswords", (req, res) => {
+  db.query("SELECT * FROM passwords;", (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
+app.post("/decryptpassword", (req, res) => {
+  res.send(decrypt(req.body));
 });
 
 app.listen(PORT, () => {
